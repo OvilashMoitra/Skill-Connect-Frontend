@@ -5,6 +5,58 @@
   text-align: center;
 }
 
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.auth-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 2rem 2.5rem;
+  min-width: 320px;
+}
+
+.auth-container h2 {
+  margin-bottom: 1.5rem;
+}
+
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-container input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.auth-container button {
+  padding: 0.75rem;
+  background: #646cff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.auth-container button:hover {
+  background: #535bf2;
+}
+
+.auth-container .error {
+  color: #d32f2f;
+  margin-top: 0.5rem;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

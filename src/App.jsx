@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+
+import { useState } from 'react';
+import Login from './Login';
+import Register from './Register';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [view, setView] = useState('login');
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+  const handleRegister = (userData) => {
+    setUser(userData);
+  };
+
+  if (user) {
+    return (
+      <div className="auth-container">
+        <h2>Welcome, {user.name || user.email}!</h2>
+        <button onClick={() => { setUser(null); setView('login'); }}>Logout</button>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="auth-wrapper">
+      {view === 'login' ? (
+        <Login onLogin={handleLogin} switchToRegister={() => setView('register')} />
+      ) : (
+        <Register onRegister={handleRegister} switchToLogin={() => setView('login')} />
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
