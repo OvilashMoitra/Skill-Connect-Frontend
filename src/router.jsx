@@ -8,7 +8,9 @@ import {
 import ProjectManager from './pages/ProjectManager';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from './pages/Profile';
+// import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
+import Payments from './pages/Payments';
 import Home from './pages/Home';
 import Layout from './components/common/Layout';
 
@@ -40,13 +42,25 @@ const registerRoute = createRoute({
   component: Register,
 });
 
-const profileRoute = createRoute({
+// const profileRoute = createRoute({
+//   getParentRoute: () => rootRoute,
+//   path: '/profile',
+//   component: Profile,
+// });
+
+const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/profile',
-  component: Profile,
+  path: '/dashboard',
+  component: Dashboard,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, projectsRoute, loginRoute, registerRoute, profileRoute]);
+const paymentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/payments',
+  component: Payments,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, projectsRoute, loginRoute, registerRoute, dashboardRoute, paymentsRoute]);
 
 const router = createRouter({ routeTree });
 

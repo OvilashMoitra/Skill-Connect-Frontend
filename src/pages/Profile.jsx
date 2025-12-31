@@ -202,12 +202,18 @@ export default function Profile() {
                  <div>
                      <h4 className="text-sm font-medium text-muted-foreground">Role</h4>
                      <p className="text-foreground">{profile.auth?.role || 'N/A'}</p>
-                </div>
-                 <div className="col-span-1 sm:col-span-2">
+                  </div>
                      <h4 className="text-sm font-medium text-muted-foreground">About</h4>
                      <p className="text-foreground">{profile.bio || 'N/A'}</p>
                 </div>
                  <div className="col-span-1 sm:col-span-2">
+                  <h4 className="text-sm font-medium text-muted-foreground">Rating</h4>
+                  <div className="flex items-center">
+                    <span className="text-2xl font-bold text-yellow-500">★ {profile.auth?.averageRating?.toFixed(1) || 'N/A'}</span>
+                    <span className="ml-2 text-sm text-muted-foreground">({profile.auth?.ratingsCount || 0} reviews)</span>
+                  </div>
+                </div>
+                <div className="col-span-1 sm:col-span-2">
                      <h4 className="text-sm font-medium text-muted-foreground">Address</h4>
                      <p className="text-foreground">{profile.address || 'N/A'}</p>
                 </div>

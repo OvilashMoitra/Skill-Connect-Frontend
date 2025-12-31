@@ -8,9 +8,11 @@
 import { useState } from "react"
 import TaskDetailsModal from "./task-details-modal"
 
-export default function TaskListView({ tasks, blockedTasks, onUpdateStatus, onAddComment, developer }) {
+export default function TaskListView({ tasks, blockedTasks, onUpdateStatus, onAddComment, onLogTime, developer }) {
   const [selectedTask, setSelectedTask] = useState(null)
   const [filterStatus, setFilterStatus] = useState("all") // all, not-started, in-progress, completed
+  const [logTimeTaskId, setLogTimeTaskId] = useState(null)
+  const [hoursToLog, setHoursToLog] = useState("")
 
   // Filter tasks by status
   const filteredTasks = filterStatus === "all" ? tasks : tasks.filter((t) => t.status === filterStatus)
@@ -85,7 +87,7 @@ export default function TaskListView({ tasks, blockedTasks, onUpdateStatus, onAd
                 <div className="text-sm space-y-1">
                   <p className="font-bold">Deadline: {new Date(task.deadline).toLocaleDateString()}</p>
                   <p className="text-muted-foreground">
-                    {task.timeLogged}h / {task.estimatedTime}h
+                    {(task.timeLogged / 3600).toFixed(1)}h / {task.estimatedTime}h
                   </p>
                 </div>
                 <span
@@ -104,6 +106,54 @@ export default function TaskListView({ tasks, blockedTasks, onUpdateStatus, onAd
                       : "○ Not Started"}
                 </span>
               </div>
+
+              {/* Time Logging Section */}
+              {logTimeTaskId === task.id ? (
+                <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={hoursToLog}
+                      onChange={(e) => setHoursToLog(e.target.value)}
+                      placeholder="Hours"
+                      className="w-24 px-2 py-1 bg-input border border-input rounded text-sm"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => {
+                        if (hoursToLog && parseFloat(hoursToLog) > 0) {
+                          onLogTime(task.id, parseFloat(hoursToLog))
+                          setHoursToLog("")
+                          setLogTimeTaskId(null)
+                        }
+                      }}
+                      className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+                    >
+                      Log
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLogTimeTaskId(null)
+                        setHoursToLog("")
+                      }}
+                      className="px-3 py-1 bg-secondary text-secondary-foreground rounded text-sm hover:bg-secondary/90"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setLogTimeTaskId(task.id)}
+                    className="px-3 py-1 bg-accent text-accent-foreground rounded text-sm hover:bg-accent/90"
+                  >
+                    ⏱ Log Time
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -117,6 +167,7 @@ export default function TaskListView({ tasks, blockedTasks, onUpdateStatus, onAd
           onClose={() => setSelectedTask(null)}
           onUpdateStatus={onUpdateStatus}
           onAddComment={onAddComment}
+          onLogTime={onLogTime}
           developer={developer}
         />
       )}

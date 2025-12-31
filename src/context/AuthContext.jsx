@@ -11,10 +11,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check for token in localStorage on mount
     const token = localStorage.getItem('accessToken');
+    const storedUser = localStorage.getItem('user');
     if (token) {
         // Optional: validate token expiry here if needed
        setIsAuthenticated(true);
-       // In a real app, you might want to fetch the user profile here using the token
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
     setLoading(false);
   }, []);
@@ -24,8 +27,9 @@ export const AuthProvider = ({ children }) => {
       const response = await loginService(data);
        if (response.success) {
             setIsAuthenticated(true);
-            // You might want to set user data if returned from login
-            // setUser(response.data.user);
+         setUser(response.data.user);
+         localStorage.setItem('accessToken', response.data.accessToken);
+         localStorage.setItem('user', JSON.stringify(response.data.user)); // Persist user
         }
       return response;
     } catch (error) {
@@ -35,6 +39,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
   };

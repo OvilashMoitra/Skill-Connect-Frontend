@@ -1,12 +1,9 @@
-"use client"
-
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 
 // Task form component for creating new tasks within a project
 // Takes user input for task details including title, description, priority, deadline, estimated time, and assignee
 // Also allows selecting task dependencies (other tasks that must be completed first)
-export default function TaskForm({ onSubmit, projectTasks }) {
+export default function TaskForm({ onSubmit, projectTasks = [], teamMembers = [] }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -76,114 +73,103 @@ export default function TaskForm({ onSubmit, projectTasks }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-800 rounded-lg border border-slate-700 p-6 space-y-4">
-      <h3 className="text-xl font-bold text-white mb-4">Create New Task</h3>
+    <form onSubmit={handleSubmit} className="bg-card shadow-sm rounded-md border border-border p-4 space-y-3">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-lg font-bold">New Task</h3>
+      </div>
 
-      {/* Task title input */}
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">Task Title</label>
+      <div className="space-y-3">
+        {/* Title */}
         <input
           type="text"
           name="title"
           value={formData.title}
           onChange={handleChange}
-          placeholder="Enter task title"
-          className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          placeholder="Task Title"
+          className="w-full bg-input border border-input rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
         />
-      </div>
 
-      {/* Task description input */}
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
+        {/* Description */}
         <textarea
           name="description"
           value={formData.description}
           onChange={handleChange}
-          placeholder="Describe the task"
-          className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
-          rows="3"
+          placeholder="Description"
+          className="w-full bg-input border border-input rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none h-20"
         />
-      </div>
 
-      {/* Priority, deadline, and estimated time inputs */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Priority</label>
+        {/* Row 1: Priority, Deadline */}
+        <div className="grid grid-cols-2 gap-3">
           <select
             name="priority"
             value={formData.priority}
             onChange={handleChange}
-            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            className="w-full bg-input border border-input rounded px-3 py-2 text-sm"
           >
             <option>Low</option>
             <option>Medium</option>
             <option>High</option>
           </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Deadline</label>
           <input
             type="date"
             name="deadline"
             value={formData.deadline}
             onChange={handleChange}
-            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            className="w-full bg-input border border-input rounded px-3 py-2 text-sm"
           />
         </div>
-      </div>
 
-      {/* Estimated time and assignee inputs */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Estimated Time (hours)</label>
+        {/* Row 2: Time, Assignee */}
+        <div className="grid grid-cols-2 gap-3">
           <input
             type="number"
             name="estimatedTime"
             value={formData.estimatedTime}
             onChange={handleChange}
-            placeholder="e.g., 8"
-            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            placeholder="Est. Hours"
+            className="w-full bg-input border border-input rounded px-3 py-2 text-sm"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Assign To</label>
-          <input
-            type="text"
+          <select
             name="assignee"
             value={formData.assignee}
             onChange={handleChange}
-            placeholder="Developer name"
-            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-          />
+            className="w-full bg-input border border-input rounded px-3 py-2 text-sm"
+          >
+            <option value="">Assign To...</option>
+            {teamMembers && teamMembers.map((member) => (
+              <option key={member._id} value={member._id}>
+                {member.name || member.email}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Dependencies */}
+        {projectTasks && projectTasks.length > 0 && (
+          <div className="text-xs">
+            <p className="mb-1 text-muted-foreground">Dependencies:</p>
+            <div className="flex flex-wrap gap-2">
+              {projectTasks.map((task) => (
+                <label key={task.id} className="flex items-center gap-1 cursor-pointer bg-secondary px-2 py-1 rounded">
+                  <input
+                    type="checkbox"
+                    checked={formData.dependencies.includes(task.id)}
+                    onChange={() => handleDependencyToggle(task.id)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span>{task.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {/* Task dependencies selector */}
-      {projectTasks.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Task Dependencies</label>
-          <p className="text-xs text-slate-400 mb-2">Select tasks that must be completed first</p>
-          <div className="space-y-2 bg-slate-700/50 p-3 rounded border border-slate-600">
-            {projectTasks.map((task) => (
-              <label key={task.id} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.dependencies.includes(task.id)}
-                  onChange={() => handleDependencyToggle(task.id)}
-                  className="rounded"
-                />
-                <span className="text-sm text-slate-300">{task.title}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Form action buttons */}
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
-          Create Task
-        </Button>
+      <div className="flex gap-2 pt-2">
+        <button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium py-2 rounded">
+          Add Task
+        </button>
       </div>
     </form>
   )

@@ -41,10 +41,10 @@ export default function TaskCard({ task, project, onUpdateStatus, onAddComment, 
         {/* Progress */}
         <div className="mb-3">
           <div className="bg-secondary h-2 rounded overflow-hidden border border-border">
-            <div className="bg-primary h-full" style={{ width: `${(task.timeLogged / task.estimatedTime) * 100}%` }} />
+            <div className="bg-primary h-full" style={{ width: `${Math.min(((task.timeLogged / 3600) / task.estimatedTime) * 100, 100)}%` }} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {task.timeLogged.toFixed(1)}h / {task.estimatedTime}h
+            {(task.timeLogged / 3600).toFixed(1)}h / {task.estimatedTime}h
           </p>
         </div>
 
@@ -64,6 +64,7 @@ export default function TaskCard({ task, project, onUpdateStatus, onAddComment, 
           onClose={() => setShowDetails(false)}
           onUpdateStatus={onUpdateStatus}
           onAddComment={onAddComment}
+          onLogTime={() => { }}
         />
       )}
     </>

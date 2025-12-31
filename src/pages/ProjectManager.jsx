@@ -1,12 +1,17 @@
 
 
 import { useState, useEffect } from "react"
-import axios from 'axios'
+import api from "../services/api"
 import Dashboard from "../components/project_management/dashboard"
 import ProjectForm from "../components/project_management/project-form"
+import TaskForm from "../components/project_management/task-form"
+import AddDeveloperSection from "../components/project_management/add-developer-section"
 import Navigation from "../components/project_management/navigation"
 import DeveloperDashboard from "../components/project_management/developer-dashboard"
+import ActivityFeed from "../components/project_management/activity-feed"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Main App Component
@@ -15,161 +20,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
  * Tracks project creation, task management, time logging, and performance
  */
 export default function ProjectManager() {
-  const [userRole, setUserRole] = useState("manager") // "manager" or "developer"
-  const [currentDeveloper, setCurrentDeveloper] = useState("John") // Active developer user
+  const { user } = useAuth();
+  const [userRole, setUserRole] = useState(user?.role || "manager");
+  const [currentDeveloper, setCurrentDeveloper] = useState(user?.name || "John"); 
   const queryClient = useQueryClient();
 
-  // Project data structure with all features
-  const [projects, setProjects] = useState([
-    {
-      id: "1",
-      name: "Website Redesign",
-      description: "Complete redesign of company website",
-      startDate: "2025-01-15",
-      endDate: "2025-03-15",
-      budget: 15000,
-      progress: 65,
-      milestones: [
-        { id: "m1", name: "Design Phase", dueDate: "2025-02-01", completed: true },
-        { id: "m2", name: "Development", dueDate: "2025-02-28", completed: false },
-        { id: "m3", name: "Testing & Launch", dueDate: "2025-03-15", completed: false },
-      ],
-      tasks: [
-        {
-          id: "t1",
-          title: "Homepage Design",
-          description: "Design the new homepage layout with responsive components",
-          priority: "high",
-          deadline: "2025-01-30",
-          estimatedTime: 20,
-          status: "in-progress",
-          assignee: "John",
-          timeLogged: 12,
-          dependencies: [],
-          comments: [
-            { id: "c1", author: "Manager", text: "Great progress! Keep it up.", timestamp: "2025-01-20 10:30" },
-          ],
-          files: ["homepage-sketch.pdf", "design-specs.doc"],
-          startDate: "2025-01-18",
-          completedDate: null,
-        },
-        {
-          id: "t2",
-          title: "Backend API Setup",
-          description: "Setup REST API endpoints for frontend integration",
-          priority: "high",
-          deadline: "2025-02-05",
-          estimatedTime: 30,
-          status: "not-started",
-          assignee: "Sarah",
-          timeLogged: 0,
-          dependencies: ["t1"],
-          comments: [],
-          files: [],
-          startDate: null,
-          completedDate: null,
-        },
-        {
-          id: "t3",
-          title: "Database Migration",
-          description: "Migrate data from old system to new database",
-          priority: "medium",
-          deadline: "2025-02-20",
-          estimatedTime: 15,
-          status: "completed",
-          assignee: "Mike",
-          timeLogged: 16,
-          dependencies: ["t2"],
-          comments: [{ id: "c2", author: "Mike", text: "Completed ahead of schedule.", timestamp: "2025-01-25 14:00" }],
-          files: ["migration-script.sql"],
-          startDate: "2025-01-22",
-          completedDate: "2025-01-25",
-        },
-      ],
-      activityLog: [
-        { id: "a1", action: "Task status changed", task: "t1", status: "in-progress", timestamp: "2025-01-18 09:00" },
-        { id: "a2", action: "Time logged", task: "t1", hours: 8, timestamp: "2025-01-20 17:00" },
-      ],
-    },
-    {
-      id: "2",
-      name: "Mobile App",
-      description: "iOS and Android mobile application",
-      startDate: "2025-02-01",
-      endDate: "2025-05-01",
-      budget: 25000,
-      progress: 30,
-      milestones: [
-        { id: "m4", name: "UI Kit Design", dueDate: "2025-02-15", completed: true },
-        { id: "m5", name: "Core Features", dueDate: "2025-03-31", completed: false },
-      ],
-      tasks: [
-        {
-          id: "t4",
-          title: "UI Kit Design",
-          description: "Design reusable UI components for iOS and Android",
-          priority: "high",
-          deadline: "2025-02-15",
-          estimatedTime: 25,
-          status: "in-progress",
-          assignee: "Emma",
-          timeLogged: 8,
-          dependencies: [],
-          comments: [],
-          files: [],
-          startDate: "2025-02-01",
-          completedDate: null,
-        },
-      ],
-      activityLog: [],
-    },
-  ])
+  useEffect(() => {
+    if (user?.role) setUserRole(user.role);
+  }, [user]);
 
-  // Developer performance data
-  const [developerStats, setDeveloperStats] = useState({
-    John: {
-      totalTasksCompleted: 42,
-      averageTimePerTask: 7.5,
-      rating: 4.8,
-      tasksThisWeek: 5,
-      hoursLoggedThisWeek: 35,
-      productivity: [
-        { day: "Mon", hours: 8 },
-        { day: "Tue", hours: 7.5 },
-        { day: "Wed", hours: 8 },
-        { day: "Thu", hours: 8.5 },
-        { day: "Fri", hours: 7 },
-      ],
-    },
-    Sarah: {
-      totalTasksCompleted: 38,
-      averageTimePerTask: 8.2,
-      rating: 4.6,
-      tasksThisWeek: 4,
-      hoursLoggedThisWeek: 32,
-      productivity: [
-        { day: "Mon", hours: 7 },
-        { day: "Tue", hours: 8 },
-        { day: "Wed", hours: 7.5 },
-        { day: "Thu", hours: 8 },
-        { day: "Fri", hours: 8 },
-      ],
-    },
-    Emma: {
-      totalTasksCompleted: 35,
-      averageTimePerTask: 6.8,
-      rating: 4.9,
-      tasksThisWeek: 6,
-      hoursLoggedThisWeek: 40,
-      productivity: [
-        { day: "Mon", hours: 8 },
-        { day: "Tue", hours: 8 },
-        { day: "Wed", hours: 8 },
-        { day: "Thu", hours: 8 },
-        { day: "Fri", hours: 8 },
-      ],
-    },
-  })
+
+  // Project data - starts empty, populated from API
+  const [projects, setProjects] = useState([])
+
+  // Default developer stats (fallback for new developers)
+  const defaultStats = {
+    totalTasksCompleted: 0,
+    averageTimePerTask: 0,
+    rating: 0,
+    tasksThisWeek: 0,
+    hoursLoggedThisWeek: 0,
+    productivity: [
+      { day: "Mon", hours: 0 },
+      { day: "Tue", hours: 0 },
+      { day: "Wed", hours: 0 },
+      { day: "Thu", hours: 0 },
+      { day: "Fri", hours: 0 },
+    ],
+  };
+
+  // Developer performance data (can be fetched from API in future)
+  const [developerStats] = useState({})
 
   const [currentView, setCurrentView] = useState("dashboard")
   const [selectedProject, setSelectedProject] = useState(projects[0])
@@ -181,7 +62,7 @@ export default function ProjectManager() {
   const createProjectMutation = useMutation({
     mutationFn: (newProject) => {
       // Ensure data format matches backend expectation
-      return axios.post('http://localhost:1022/api/v1/projects', {
+      return api.post('/projects', {
         ...newProject,
         startDate: new Date(newProject.startDate),
         endDate: new Date(newProject.endDate),
@@ -208,11 +89,13 @@ export default function ProjectManager() {
    */
   const createTaskMutation = useMutation({
     mutationFn: (newTask) => {
-      return axios.post('http://localhost:1022/api/v1/tasks', {
+      return api.post('/tasks', {
         ...newTask,
         projectId: selectedProject.id,
         deadline: new Date(newTask.deadline),
         estimatedTime: Number(newTask.estimatedTime),
+        status: newTask.status.toLowerCase().replace(" ", "-"), // "Not Started" -> "not-started"
+        priority: newTask.priority.toLowerCase(), // "High" -> "high"
       });
     },
     onSuccess: () => {
@@ -236,7 +119,7 @@ export default function ProjectManager() {
    */
   const updateTaskMutation = useMutation({
     mutationFn: ({ taskId, data }) => {
-      return axios.patch(`http://localhost:1022/api/v1/tasks/${taskId}`, data);
+      return api.patch(`/tasks/${taskId}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -263,60 +146,46 @@ export default function ProjectManager() {
    * Log time for a task
    * Updates developer stats and project progress
    */
+  /*
+   * Log time for a task
+   * Updates developer stats and project progress
+   */
   const handleLogTime = (taskId, hours) => {
-    // Note: Backend should handle incrementing time logic if needed, 
-    // or we fetch current task, calculate new total, and send it.
-    // For simplicity, assuming backend or we just send the incremental change if backend supported it,
-    // but typically REST PATCH replaces fields. 
-    // We would ideally fetch the task first or adjust backend to accept 'inc'.
-    // Here we will do a best-effort simpler approach or just acknowledge limitation 
-    // that we need current value. Since we have 'projects' state from react-query, we can find it.
+    // Calculate start and end time based on hours duration - estimation
+    const endTime = new Date();
+    const startTime = new Date(endTime.getTime() - hours * 60 * 60 * 1000);
     
-    // Find current task time
-    const project = projects.find(p => p.id === selectedProject.id);
-    const task = project?.tasks.find(t => t.id === taskId);
-    if (task) {
-        const newTime = (task.timeLogged || 0) + hours;
-        updateTaskMutation.mutate({ taskId, data: { timeLogged: newTime } });
-    }
+    api.post(`/tasks/${taskId}/log-time`, {
+      startTime,
+      endTime
+    }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    });
   }
 
   /**
    * Add a comment to a task
    * Supports private comments for manager or team-visible comments
    */
+  /**
+   * Add a comment to a task
+   * Supports private comments for manager or team-visible comments
+   */
   const handleAddComment = (taskId, comment, isPrivate = false) => {
-     // Similar logic: we need to append to existing comments.
-     // In a real app, comments would likely be a separate sub-resource or backend handles push.
-     // Since backend uses simple update, we must construct the new array.
-    const project = projects.find(p => p.id === selectedProject.id);
-    const task = project?.tasks.find(t => t.id === taskId);
-    if (task) {
-        const newComment = {
-            text: comment,
-            isPrivate,
-            authorId: "current-user-id", // Needs actual user ID handling
-            timestamp: new Date()
-        };
-        // Backend expects 'comments' array replacement or we need a specific 'add comment' endpoint.
-        // Given current backend 'updateTask' just updates fields, we send new array.
-        // NOTE: This has race conditions but fits the current simple architecture.
-        // Ideally we should have POST /api/v1/tasks/:id/comments
-        const updatedComments = [...(task.comments || []), newComment];
-        
-        // Since our backend Task model defines comments structure, we might face issues if we don't send valid objects.
-        // For now, let's try sending the updated array.
-        // Actually, looking at backend model, comments is an array of subdocuments.
-        // We'll proceed with this.
-        updateTaskMutation.mutate({ taskId, data: { comments: updatedComments }});
-    }
+    api.post(`/tasks/${taskId}/comments`, {
+      text: comment,
+      isPrivate
+    }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    });
   }
+
 
 
   const { data: fetchedProjects, isSuccess } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const response = await axios.get('http://localhost:1022/api/v1/projects');
+      const response = await api.get('/projects');
       return response.data.data;
     },
   })
@@ -331,8 +200,22 @@ export default function ProjectManager() {
             activityLog: p.activityLog || []
         }));
         setProjects(formattedProjects);
+
+      // Auto-select the first real project if we are currently holding the mock one or nothing
+      if (formattedProjects.length > 0) {
+        // Check if we need to update the currently selected project with fresh data
+        if (selectedProject && selectedProject.id !== '1' && selectedProject.id !== '2') {
+          const updatedSelected = formattedProjects.find(p => p.id === selectedProject.id);
+          if (updatedSelected) {
+            setSelectedProject(updatedSelected);
+          }
+        } else if (!selectedProject || selectedProject.id === '1' || selectedProject.id === '2') {
+          // Initial load or replacing mock
+          setSelectedProject(formattedProjects[0]);
+        }
+      }
     }
-  }, [fetchedProjects, isSuccess]);
+  }, [fetchedProjects, isSuccess]); // Remove selectedProject from dependency to avoid loop, or be careful
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -348,21 +231,86 @@ export default function ProjectManager() {
 
       <main className="container mx-auto px-6 py-8">
         {/* Project Manager View */}
-        {userRole === "manager" && (
+        {(userRole === "project_manager" || userRole === "manager") && (
           <>
             {currentView === "dashboard" && (
-              <Dashboard
-                projects={projects}
-                selectedProject={selectedProject}
-                setSelectedProject={setSelectedProject}
-                setCurrentView={setCurrentView}
-                onUpdateTaskStatus={handleUpdateTaskStatus}
-                onLogTime={handleLogTime}
-                onAddComment={handleAddComment}
-              />
+              <>
+                {projects.length === 0 ? (
+                  <div className="text-center py-16">
+                    <h2 className="text-2xl font-bold mb-4">No Projects Yet</h2>
+                    <p className="text-muted-foreground mb-6">Create your first project to get started.</p>
+                    <button
+                      onClick={() => setCurrentView("new-project")}
+                      className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                    >
+                      Create New Project
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                      <Dashboard
+                        projects={projects}
+                        selectedProject={selectedProject}
+                        setSelectedProject={setSelectedProject}
+                        setCurrentView={setCurrentView}
+                        onUpdateTaskStatus={handleUpdateTaskStatus}
+                        onLogTime={handleLogTime}
+                        onAddComment={handleAddComment}
+                      />
+
+                    {selectedProject && (
+                      <div className="mt-8 p-6 bg-card border border-border rounded-lg">
+                        <h3 className="text-xl font-bold mb-4">Manage Team</h3>
+                        <AddDeveloperSection
+                          projectId={selectedProject.id}
+                          currentTeam={selectedProject.team}
+                          onUserAdded={() => queryClient.invalidateQueries({ queryKey: ['projects'] })}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
             {currentView === "new-project" && (
               <ProjectForm onSubmit={handleAddProject} onCancel={() => setCurrentView("dashboard")} />
+            )}
+
+            {/* Activity View */}
+            {currentView === "activity" && selectedProject && (
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold">Project Activity</h2>
+                    <p className="text-muted-foreground mt-1">{selectedProject.name}</p>
+                  </div>
+                  <button
+                    onClick={() => setCurrentView("dashboard")}
+                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
+                  >
+                    Back to Dashboard
+                  </button>
+                </div>
+                <ActivityFeed
+                  projectId={selectedProject._id || selectedProject.id}
+                  limit={100}
+                />
+              </div>
+            )}
+            {currentView === "new-task" && selectedProject && (
+              <div className="max-w-2xl mx-auto">
+                <div className="mb-4">
+                  <button onClick={() => setCurrentView("dashboard")} className="text-sm hover:underline">
+                    &larr; Back to Dashboard
+                  </button>
+                </div>
+                <TaskForm
+                  onSubmit={handleAddTask}
+                  projectTasks={selectedProject.tasks || []}
+                  teamMembers={selectedProject.team || []}
+                  onCancel={() => setCurrentView("dashboard")}
+                />
+              </div>
             )}
           </>
         )}
@@ -372,7 +320,7 @@ export default function ProjectManager() {
           <DeveloperDashboard
             developer={currentDeveloper}
             projects={projects}
-            stats={developerStats[currentDeveloper]}
+            stats={developerStats[currentDeveloper] || defaultStats}
             currentView={currentView}
             setCurrentView={setCurrentView}
             onUpdateTaskStatus={handleUpdateTaskStatus}
@@ -384,3 +332,4 @@ export default function ProjectManager() {
     </div>
   )
 }
+

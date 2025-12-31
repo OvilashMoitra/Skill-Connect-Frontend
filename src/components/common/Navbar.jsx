@@ -29,11 +29,17 @@ export default function Navbar() {
             </Link>
             {isAuthenticated ? (
               <>
-                 <Link
-                  to="/projects"
+                <Link
+                  to="/dashboard"
                   className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
                 >
                   Dashboard
+                </Link>
+                <Link
+                  to="/projects"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+                >
+                  Projects
                 </Link>
                 <Link
                   to="/profile"

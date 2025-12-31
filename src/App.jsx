@@ -1,10 +1,12 @@
 import ProjectManager from './pages/ProjectManager'
 import './App.css'
+import router from './router'
 
 function App() {  
   return (
     <>
-      <ProjectManager />
+      {/* <ProjectManager /> */}
+      {/* <RouterProvider router={router} /> */}
     </>
   )
 }

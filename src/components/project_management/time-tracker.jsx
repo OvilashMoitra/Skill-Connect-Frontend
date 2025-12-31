@@ -79,7 +79,7 @@ export default function TimeTracker({ tasks, onLogTime, developer }) {
                   }`}
                 >
                   <p className="text-sm text-muted-foreground">{task.title}</p>
-                  <p className="text-xs mt-1">{task.timeLogged.toFixed(1)}h logged</p>
+                  <p className="text-xs mt-1">{(task.timeLogged / 3600).toFixed(1)}h logged</p>
                 </button>
               ))}
             </div>
@@ -112,7 +112,7 @@ export default function TimeTracker({ tasks, onLogTime, developer }) {
             >
               {tasks.map((task) => (
                 <option key={task.id} value={task.id}>
-                  {task.title} ({task.timeLogged.toFixed(1)}h / {task.estimatedTime}h)
+                  {task.title} ({(task.timeLogged / 3600).toFixed(1)}h / {task.estimatedTime}h)
                 </option>
               ))}
             </select>
@@ -151,7 +151,7 @@ export default function TimeTracker({ tasks, onLogTime, developer }) {
             >
               <span className="font-bold">{task.title}</span>
               <span className="text-muted-foreground">
-                {task.timeLogged.toFixed(1)}h / {task.estimatedTime}h
+                {(task.timeLogged / 3600).toFixed(1)}h / {task.estimatedTime}h
               </span>
             </div>
           ))}
