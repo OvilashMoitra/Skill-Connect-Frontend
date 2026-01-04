@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { login as loginService } from '../services/auth.service';
+import PaymentService from '../services/payment.service';
 
 const AuthContext = createContext();
 
@@ -44,11 +45,26 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Refresh user data (e.g., after payment to update paid status)
+  const refreshUser = async () => {
+    try {
+      const response = await PaymentService.getSubscriptionStatus();
+      if (response.data.data) {
+        const updatedUser = { ...user, paid: response.data.data.isPremium };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, isAuthenticated, login, logout, loading, refreshUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+

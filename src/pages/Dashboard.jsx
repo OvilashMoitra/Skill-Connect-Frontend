@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import ProjectService from '../services/project.service';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Redirect super_admin to admin dashboard
+  useEffect(() => {
+    if (user?.role === 'super_admin') {
+      navigate({ to: '/admin-dashboard' });
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,7 +34,10 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-    fetchData();
+
+    if (user && user.role !== 'super_admin') {
+      fetchData();
+    }
   }, [user]);
 
   const calculateStats = (projects, role) => {
@@ -47,6 +57,20 @@ export default function Dashboard() {
       .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
       .slice(0, 5);
 
+    // For developers, filter tasks assigned to them
+    // assigneeId might be an object (populated) or a string
+    // user._id comes from the login response (auth service returns _id)
+    const currentUserId = user?._id || user?.userId;
+    const myTasks = role === 'developer'
+      ? allTasks.filter(t => {
+        const assigneeId = t.assigneeId?._id || t.assigneeId;
+        return String(assigneeId) === String(currentUserId);
+      })
+      : [];
+
+    const myCompletedTasks = myTasks.filter(t => t.status === 'completed');
+    const myInProgressTasks = myTasks.filter(t => t.status === 'in-progress');
+
     return {
       totalProjects: projects.length,
       activeProjects: projects.filter(p => {
@@ -58,7 +82,9 @@ export default function Dashboard() {
       pendingTasks: pendingTasks.length,
       totalBudget,
       upcomingDeadlines,
-      myTasks: role === 'developer' ? allTasks.filter(t => t.assigneeId === user?.userId) : [],
+      myTasks,
+      myCompletedTasks: myCompletedTasks.length,
+      myInProgressTasks: myInProgressTasks.length,
     };
   };
 
@@ -66,8 +92,6 @@ export default function Dashboard() {
   if (!stats) return <div className="p-8 text-center">Failed to load stats.</div>;
 
   const isManager = user?.role === 'project_manager' || user?.role === 'manager';
-
-  console.log({stats});
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -81,7 +105,7 @@ export default function Dashboard() {
             : `Your assigned tasks and project involvement`}
         </p>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {isManager ? (
@@ -95,8 +119,8 @@ export default function Dashboard() {
           <>
             <StatCard title="My Projects" value={stats.totalProjects} color="blue" />
             <StatCard title="My Tasks" value={stats.myTasks.length} color="green" />
-            <StatCard title="Completed" value={stats.myTasks.filter(t => t.status === 'completed').length} color="purple" />
-            <StatCard title="In Progress" value={stats.totalTasks} color="orange" />
+              <StatCard title="Completed" value={stats.myCompletedTasks} color="purple" />
+              <StatCard title="In Progress" value={stats.myInProgressTasks} color="orange" />
           </>
         )}
       </div>
@@ -173,7 +197,7 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="mt-8 bg-card border border-border p-6 rounded-lg">
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           <Link 
             to="/projects" 
             className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"

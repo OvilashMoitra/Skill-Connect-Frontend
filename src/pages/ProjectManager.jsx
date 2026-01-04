@@ -1,6 +1,8 @@
 
 
+
 import { useState, useEffect } from "react"
+import { useNavigate } from "@tanstack/react-router"
 import api from "../services/api"
 import Dashboard from "../components/project_management/dashboard"
 import ProjectForm from "../components/project_management/project-form"
@@ -10,6 +12,7 @@ import Navigation from "../components/project_management/navigation"
 import DeveloperDashboard from "../components/project_management/developer-dashboard"
 import ActivityFeed from "../components/project_management/activity-feed"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Crown, X, Sparkles } from 'lucide-react'
 
 import { useAuth } from "../context/AuthContext";
 
@@ -21,9 +24,13 @@ import { useAuth } from "../context/AuthContext";
  */
 export default function ProjectManager() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [userRole, setUserRole] = useState(user?.role || "manager");
   const [currentDeveloper, setCurrentDeveloper] = useState(user?.name || "John"); 
   const queryClient = useQueryClient();
+
+  // Upgrade modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     if (user?.role) setUserRole(user.role);
@@ -72,6 +79,14 @@ export default function ProjectManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setCurrentView("dashboard");
+    },
+    onError: (error) => {
+      // Check if this is a project limit error (403 Forbidden)
+      if (error.response?.status === 403 && error.response?.data?.message?.includes('Upgrade to premium')) {
+        setShowUpgradeModal(true);
+      } else {
+        alert(error.response?.data?.message || 'Failed to create project');
+      }
     },
   });
 
@@ -329,6 +344,54 @@ export default function ProjectManager() {
           />
         )}
       </main>
+
+      {/* Upgrade to Premium Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-8 h-8 text-white" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Project Limit Reached
+              </h2>
+
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Free tier users can only create up to 2 projects. Upgrade to Premium for unlimited projects and exclusive features!
+              </p>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setShowUpgradeModal(false);
+                    navigate({ to: '/subscription' });
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Upgrade to Premium
+                </button>
+
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="w-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 font-medium py-3 px-6 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

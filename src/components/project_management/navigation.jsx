@@ -1,5 +1,7 @@
 "use client"
 
+import NotificationBell from '../NotificationBell';
+
 /**
  * Navigation Component - Updated with lively animations
  * Top bar with role switcher and project overview
@@ -83,6 +85,11 @@ export default function Navigation({
               </button>
             </div>
           )}
+
+          {/* Notification Bell */}
+          <div className="animate-slide-in-down" style={{ animationDelay: "0.3s" }}>
+            <NotificationBell />
+          </div>
         </div>
       </div>
     </nav>

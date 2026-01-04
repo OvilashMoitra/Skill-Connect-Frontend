@@ -8,11 +8,14 @@
 import { useState, useEffect } from "react"
 import FileUpload from "./file-upload"
 import ActivityFeed from "./activity-feed"
+import RatingModal from "./rating-modal"
 
 export default function TaskDetailsModal({ task, project, onClose, onUpdateStatus, onAddComment, developer, onLogTime }) {
   const [activeTab, setActiveTab] = useState("details") // details, time, comments, attachments
   const [comment, setComment] = useState("")
   const [isPrivate, setIsPrivate] = useState(false)
+  const [showRatingModal, setShowRatingModal] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState(null)
 
   // Timer states
   const [isTimerRunning, setIsTimerRunning] = useState(false)
@@ -23,6 +26,38 @@ export default function TaskDetailsModal({ task, project, onClose, onUpdateStatu
   // Show team comments or just private ones (for developers)
   const visibleComments =
     developer && task.comments.some((c) => c.isPrivate) ? task.comments.filter((c) => !c.isPrivate) : task.comments
+
+  // Handle status change - prompt for rating when completing task
+  const handleStatusChange = (newStatus) => {
+    if (newStatus === 'completed' && !developer && task.assigneeId && task.status !== 'completed') {
+      // Manager is completing a task - show rating prompt
+      setPendingStatus(newStatus)
+      setShowRatingModal(true)
+    } else {
+      // Normal status update
+      onUpdateStatus(task.id, newStatus)
+      onClose()
+    }
+  }
+
+  // After rating is submitted or skipped
+  const handleRatingComplete = () => {
+    if (pendingStatus) {
+      onUpdateStatus(task.id, pendingStatus)
+      setPendingStatus(null)
+    }
+    setShowRatingModal(false)
+    onClose()
+  }
+
+  const handleSkipRating = () => {
+    if (pendingStatus) {
+      onUpdateStatus(task.id, pendingStatus)
+      setPendingStatus(null)
+    }
+    setShowRatingModal(false)
+    onClose()
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -66,10 +101,7 @@ export default function TaskDetailsModal({ task, project, onClose, onUpdateStatu
                   {["not-started", "in-progress", "completed"].map((status) => (
                     <button
                       key={status}
-                      onClick={() => {
-                        onUpdateStatus(task.id, status)
-                        onClose()
-                      }}
+                      onClick={() => handleStatusChange(status)}
                       className={`px-6 py-3 font-bold rounded transition ${
                         task.status === status
                           ? "bg-primary text-primary-foreground"
@@ -327,6 +359,14 @@ export default function TaskDetailsModal({ task, project, onClose, onUpdateStatu
 
         {/* Footer */}
         <div className="border-t-4 border-primary p-8 flex gap-4">
+          {!developer && task.status === 'completed' && task.assigneeId && !pendingStatus && (
+            <button
+              onClick={() => setShowRatingModal(true)}
+              className="flex-1 px-6 py-3 font-bold bg-yellow-400 text-black hover:bg-yellow-500 rounded transition flex items-center justify-center gap-2"
+            >
+              <span className="text-xl">⭐</span> Rate Developer
+            </button>
+          )}
           <button
             onClick={onClose}
             className="flex-1 px-6 py-3 font-bold bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground rounded transition"
@@ -335,6 +375,23 @@ export default function TaskDetailsModal({ task, project, onClose, onUpdateStatu
           </button>
         </div>
       </div>
+
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={pendingStatus ? handleSkipRating : () => setShowRatingModal(false)}
+          toUserId={task.assigneeId}
+          toUserName={task.assignee}
+          entityType="task"
+          entityId={task._id || task.id}
+          entityName={task.title}
+          onSuccess={handleRatingComplete}
+          showSkip={!!pendingStatus}
+          onSkip={handleSkipRating}
+        />
+      )}
     </div>
   )
 }
+

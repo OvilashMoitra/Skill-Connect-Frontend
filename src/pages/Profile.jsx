@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import StarRating from '../components/StarRating';
 import { getProfile, createProfile, updateProfile } from '../services/profile.service';
 
 export default function Profile() {
@@ -203,14 +204,48 @@ export default function Profile() {
                      <h4 className="text-sm font-medium text-muted-foreground">Role</h4>
                      <p className="text-foreground">{profile.auth?.role || 'N/A'}</p>
                   </div>
+                  <div className="col-span-1 sm:col-span-2">
                      <h4 className="text-sm font-medium text-muted-foreground">About</h4>
                      <p className="text-foreground">{profile.bio || 'N/A'}</p>
-                </div>
-                 <div className="col-span-1 sm:col-span-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Rating</h4>
-                  <div className="flex items-center">
-                    <span className="text-2xl font-bold text-yellow-500">★ {profile.auth?.averageRating?.toFixed(1) || 'N/A'}</span>
-                    <span className="ml-2 text-sm text-muted-foreground">({profile.auth?.ratingsCount || 0} reviews)</span>
+                  </div>
+                  <div className="col-span-1 sm:col-span-2 space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Performance Rating</h4>
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <span className="text-4xl font-black text-foreground">
+                            {profile.averageRating?.toFixed(1) || '0.0'}
+                          </span>
+                          <div className="flex justify-center mt-1">
+                            <StarRating rating={profile.averageRating || 0} readonly size="sm" />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {profile.totalRatings || 0} total reviews
+                          </p>
+                        </div>
+
+                        {/* Distribution Bar */}
+                        <div className="flex-1 max-w-xs space-y-1">
+                          {[5, 4, 3, 2, 1].map((star) => {
+                            const count = profile.ratingsBreakdown?.[star] || 0;
+                            const total = profile.totalRatings || 0;
+                            const percent = total > 0 ? (count / total) * 100 : 0;
+
+                            return (
+                              <div key={star} className="flex items-center gap-2 text-xs">
+                                <span className="w-3">{star}★</span>
+                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-yellow-400 rounded-full"
+                                    style={{ width: `${percent}%` }}
+                                  />
+                                </div>
+                                <span className="w-6 text-right text-muted-foreground">{count}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                   </div>
                 </div>
                 <div className="col-span-1 sm:col-span-2">

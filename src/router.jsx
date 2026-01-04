@@ -8,9 +8,12 @@ import {
 import ProjectManager from './pages/ProjectManager';
 import Login from './pages/Login';
 import Register from './pages/Register';
-// import Profile from './pages/Profile';
+import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
 import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Payments from './pages/Payments';
+import Subscription from './pages/Subscription';
 import Home from './pages/Home';
 import Layout from './components/common/Layout';
 
@@ -42,16 +45,28 @@ const registerRoute = createRoute({
   component: Register,
 });
 
-// const profileRoute = createRoute({
-//   getParentRoute: () => rootRoute,
-//   path: '/profile',
-//   component: Profile,
-// });
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile',
+  component: Profile,
+});
+
+const publicProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/user/$userId',
+  component: PublicProfile,
+});
 
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
   component: Dashboard,
+});
+
+const adminDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin-dashboard',
+  component: AdminDashboard,
 });
 
 const paymentsRoute = createRoute({
@@ -60,9 +75,17 @@ const paymentsRoute = createRoute({
   component: Payments,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, projectsRoute, loginRoute, registerRoute, dashboardRoute, paymentsRoute]);
+const subscriptionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/subscription',
+  component: Subscription,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, projectsRoute, loginRoute, registerRoute, profileRoute, publicProfileRoute, dashboardRoute, adminDashboardRoute, paymentsRoute, subscriptionRoute]);
 
 const router = createRouter({ routeTree });
 
 export default router;
+
+
 

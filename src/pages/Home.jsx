@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { Crown, Check, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -94,6 +95,67 @@ export default function Home() {
               </div>
           </div>
       </section>
+
+      {/* Premium Subscription Section */}
+      <section className="bg-background py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-3 py-1 mb-4">
+                <Crown className="w-4 h-4 text-primary" />
+                <span className="text-primary font-medium text-sm">Premium</span>
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
+                Unlock Unlimited Projects
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Free accounts are limited to 2 active projects. Upgrade to Premium for unlimited projects and priority support.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-foreground">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span>Unlimited projects</span>
+                </li>
+                <li className="flex items-center gap-3 text-foreground">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span>Priority customer support</span>
+                </li>
+                <li className="flex items-center gap-3 text-foreground">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span>Advanced analytics & reports</span>
+                </li>
+                <li className="flex items-center gap-3 text-foreground">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span>1 year of full access</span>
+                </li>
+              </ul>
+              <Link
+                to="/subscription"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-medium py-3 px-6 rounded-md hover:bg-primary/90"
+              >
+                View Pricing <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="mt-10 lg:mt-0">
+              <div className="bg-card rounded-lg border border-border p-8 text-center">
+                <p className="text-muted-foreground text-sm uppercase tracking-wide mb-2">1 Year Subscription</p>
+                <div className="flex items-baseline justify-center gap-1 mb-4">
+                  <span className="text-5xl font-bold text-foreground">$49.99</span>
+                  <span className="text-muted-foreground">/year</span>
+                </div>
+                <p className="text-muted-foreground mb-6">One-time payment. No recurring fees.</p>
+                <Link
+                  to="/subscription"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-medium py-3 px-6 rounded-md hover:bg-primary/90"
+                >
+                  Get Premium <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
+
