@@ -19,11 +19,19 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
     try {
       await register(formData);
       router.navigate({ to: '/login' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      console.error('Registration error:', err);
+      // Handle different error response structures
+      const errorMessage = 
+        err.response?.data?.message || 
+        err.response?.data?.errorMessages?.[0]?.message ||
+        err.message ||
+        'Registration failed. Please check your connection and try again.';
+      setError(errorMessage);
     }
   };
 

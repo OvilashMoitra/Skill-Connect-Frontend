@@ -14,3 +14,8 @@ export const updateProfile = async (data) => {
   const response = await api.patch('/profile', data);
   return response.data;
 };
+
+export const searchProfiles = async (query) => {
+  const response = await api.get(`/profile/search?q=${encodeURIComponent(query)}`);
+  return response.data;
+};

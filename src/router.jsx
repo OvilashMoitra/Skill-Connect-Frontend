@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Payments from './pages/Payments';
 import Subscription from './pages/Subscription';
 import Home from './pages/Home';
+import Search from './pages/Search';
 import Layout from './components/common/Layout';
 
 const rootRoute = createRootRoute({
@@ -81,7 +82,13 @@ const subscriptionRoute = createRoute({
   component: Subscription,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, projectsRoute, loginRoute, registerRoute, profileRoute, publicProfileRoute, dashboardRoute, adminDashboardRoute, paymentsRoute, subscriptionRoute]);
+const searchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/search',
+  component: Search,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, projectsRoute, loginRoute, registerRoute, profileRoute, publicProfileRoute, dashboardRoute, adminDashboardRoute, paymentsRoute, subscriptionRoute, searchRoute]);
 
 const router = createRouter({ routeTree });
 
